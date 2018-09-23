@@ -3,11 +3,30 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/user"
+	"path/filepath"
 
 	"github.com/jroimartin/gocui"
 )
 
 func main() {
+	// Setup log file
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	logSaveDir := filepath.Join(user.HomeDir, "Downloads", "gero.log")
+	f, err := os.OpenFile(logSaveDir, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	// Set logger
+	log.SetOutput(f)
+
+	log.Println("Program started")
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
@@ -67,6 +86,6 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 
 func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	userInput := v.Buffer()
-	fmt.Printf(userInput)
+	log.Printf(userInput)
 	return nil
 }
