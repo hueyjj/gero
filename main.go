@@ -59,19 +59,19 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", 'j', gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", 'k', gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("search", gocui.KeyEnter, gocui.ModNone, submitQuery); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("result", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("result", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("result", 'j', gocui.ModNone, cursorDown); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("result", 'k', gocui.ModNone, cursorUp); err != nil {
 		return err
 	}
 	return nil
@@ -111,28 +111,42 @@ func layout(g *gocui.Gui) error {
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy+1); err != nil {
+		if v.Name() == "sidebar" || v.Name() == "result" {
 			ox, oy := v.Origin()
-			if err := v.SetOrigin(ox, oy+1); err != nil {
-				return err
+			cx, cy := v.Cursor()
+			if err := v.SetCursor(cx, cy+1); err != nil {
+				if err := v.SetOrigin(ox, oy+1); err != nil {
+					return err
+				}
 			}
+			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
+			text, _ := v.Line(cy + 1)
+			if text == "" {
+				text = "No text found"
+			}
+			log.Printf("%s\n", text)
 		}
-		log.Printf("Cursor at %d, %d", cx, cy)
 	}
 	return nil
 }
 
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		ox, oy := v.Origin()
-		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
-			if err := v.SetOrigin(ox, oy-1); err != nil {
-				return err
+		if v.Name() == "sidebar" || v.Name() == "result" {
+			ox, oy := v.Origin()
+			cx, cy := v.Cursor()
+			if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+				if err := v.SetOrigin(ox, oy-1); err != nil {
+					return err
+				}
 			}
+			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
+			text, _ := v.Line(cy - 1)
+			if text == "" {
+				text = "No text found"
+			}
+			log.Printf("%s\n", text)
 		}
-		log.Printf("Cursor at %d, %d", cx, cy)
 	}
 	return nil
 }
