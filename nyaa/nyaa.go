@@ -6,63 +6,108 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+
+	"github.com/jroimartin/gocui"
 )
 
-func Query(url string) (*Nyaa, error) {
+var ResultTable *Table
+
+func UpdateTable(g *gocui.Gui) error {
+	v, err := g.View("result")
+	if err != nil {
+		// handle error
+	}
+	v.Clear()
+
+	for i := 0; i < len(ResultTable.Items); i++ {
+		fmt.Fprintln(v, ResultTable.Items[i].Title)
+	}
+	return nil
+}
+
+func Query(searchTerm string) error {
+	// Nyaa.si http request
+	url := fmt.Sprintf("https://nyaa.si/?q=%s&f=0&c=0_0&page=rss", strings.TrimSpace(searchTerm))
+	log.Printf("GET request (url): %s", url)
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Read body into bytes
 	bytes, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Unmarshal contents to a slice of items
 	var rss Rss
 	err = xml.Unmarshal(bytes, &rss)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Convert slice of items to a map
+	items := make(map[int]*Item)
 	for i := 0; i < len(rss.Items); i++ {
-		log.Print(rss.Items[i].String())
+		items[i] = &rss.Items[i]
 	}
 
-	return nil, nil
-}
+	table := Table{
+		Items: items,
+		Sort:  Seeders,
+	}
 
-type Nyaa struct {
-	results map[int]*result
-}
+	ResultTable = &table
 
-type result struct {
-}
-
-func (nyaa *Nyaa) SortByCategory() error {
 	return nil
 }
 
-func (nyaa *Nyaa) SortByTitle() error {
+type Sort string
+
+const (
+	Category  = Sort("Category")
+	Title     = Sort("Title")
+	Size      = Sort("Size")
+	Date      = Sort("Date")
+	Seeders   = Sort("Seeders")
+	Leechers  = Sort("Leechers")
+	Downloads = Sort("Downloads")
+)
+
+type Table struct {
+	Items map[int]*Item
+	Sort  Sort
+}
+
+func (nyaa *Table) SortByCategory() error {
+	// if nyaa.Sort is Category already, then just reverse
 	return nil
 }
 
-func (nyaa *Nyaa) SortBySize() error {
+func (nyaa *Table) SortByTitle() error {
 	return nil
 }
 
-func (nyaa *Nyaa) SortByDate() error {
+func (nyaa *Table) SortBySize() error {
 	return nil
 }
 
-func (nyaa *Nyaa) SortBySeeders() error {
+func (nyaa *Table) SortByDate() error {
 	return nil
 }
 
-func (nyaa *Nyaa) SortByLeechers() error {
+func (nyaa *Table) SortBySeeders() error {
 	return nil
 }
 
-func (nyaa *Nyaa) SortByDownloads() error {
+func (nyaa *Table) SortByLeechers() error {
+	return nil
+}
+
+func (nyaa *Table) SortByDownloads() error {
 	return nil
 }
 

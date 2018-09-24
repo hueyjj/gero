@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/hueyjj/gero/nyaa"
 	"github.com/jroimartin/gocui"
 )
 
@@ -94,7 +95,10 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, "Sidebar")
+		fmt.Fprintln(v, "Bookmark")
+		fmt.Fprintln(v, "Recent")
+		fmt.Fprintln(v, "History")
+		fmt.Fprintln(v, "Settings")
 	}
 
 	if v, err := g.SetView("result", 20, 3, maxX-1, maxY-1); err != nil {
@@ -160,8 +164,8 @@ func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
 
 func nextView(g *gocui.Gui, v *gocui.View) error {
 	nextIndex := (active + 1) % len(viewArr)
-	name := viewArr[nextIndex]
 
+	name := viewArr[nextIndex]
 	log.Printf("Current active view: %s", name)
 
 	if _, err := setCurrentViewOnTop(g, name); err != nil {
@@ -172,12 +176,31 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func quit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
-}
+//func previousView(g *gocui.Gui, v *gocui.View) error {
+//	previousIndex := (active - 1)
+//	name := viewArr[previousIndex]
+//	if previousIndex < 0 {
+//		previousIndex = len(viewArr) - 1
+//	}
+//	previousIndex %= len(viewArr)
+//
+//	log.Printf("Current active view: %s", name)
+//
+//	if _, err := setCurrentViewOnTop(g, name); err != nil {
+//		return err
+//	}
+//	active = previousIndex
+//	return nil
+//}
 
 func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	userInput := v.Buffer()
-	log.Println(userInput)
+	log.Printf("Input: %s", userInput)
+	nyaa.Query(userInput)
+	g.Update(nyaa.UpdateTable)
 	return nil
+}
+
+func quit(g *gocui.Gui, v *gocui.View) error {
+	return gocui.ErrQuit
 }
