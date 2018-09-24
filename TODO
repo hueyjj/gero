@@ -3,3 +3,4 @@
 * Figure out how to handle red/no color highlighth
 * Keys to set previous view
 * Performance test/improvement: queries, sorting redraws
+* After user submits a query, change focus to result (view)
