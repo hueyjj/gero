@@ -195,7 +195,7 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 
 func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	userInput := v.Buffer()
-	log.Printf("Input: %s", userInput)
+	log.Printf("Search term: %s", userInput)
 	nyaa.Query(userInput)
 	g.Update(nyaa.UpdateTable)
 	return nil
