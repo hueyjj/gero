@@ -2,42 +2,11 @@ package nyaa
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
-
-type Nyaa struct {
-	results map[int]*result
-}
-
-type result struct {
-}
-
-type Rss struct {
-	XMLName xml.Name `xml:"rss"`
-	Channel Channel  `xml:"channel"`
-}
-
-type Channel struct {
-	XMLName xml.Name `xml:"channel"`
-	Items   []Item   `xml:"item"`
-}
-
-type Item struct {
-	XMLName    xml.Name `xml:"item"`
-	Title      string   `xml:"title"`
-	Link       string   `xml:"link"`
-	GUID       string   `xml:"guid"`
-	PubDate    string   `xml:"pubDate"`
-	Seeders    string   `xml:"nyaa:seeders"`
-	Leechers   string   `xml:"nyaa:leechers"`
-	Downloads  string   `xml:"nyaa:downloads"`
-	InfoHash   string   `xml:"nyaa:infoHash"`
-	CategoryID string   `xml:"nyaa:categoryId"`
-	Category   string   `xml:"nyaa:category"`
-	Size       string   `xml:"nyaa:size"`
-}
 
 func Query(url string) (*Nyaa, error) {
 	res, err := http.Get(url)
@@ -55,15 +24,18 @@ func Query(url string) (*Nyaa, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i := 0; i < len(rss.Channel.Items); i++ {
-		log.Println(rss.Channel.Items[i].Title)
+	for i := 0; i < len(rss.Items); i++ {
+		log.Print(rss.Items[i].String())
 	}
 
 	return nil, nil
 }
 
-func (nyaa *Nyaa) FormattedString() string {
-	return ""
+type Nyaa struct {
+	results map[int]*result
+}
+
+type result struct {
 }
 
 func (nyaa *Nyaa) SortByCategory() error {
@@ -92,4 +64,42 @@ func (nyaa *Nyaa) SortByLeechers() error {
 
 func (nyaa *Nyaa) SortByDownloads() error {
 	return nil
+}
+
+type Rss struct {
+	XMLName xml.Name `xml:"rss"`
+	Items   []Item   `xml:"channel>item"`
+}
+
+type Item struct {
+	XMLName    xml.Name `xml:"item"`
+	Title      string   `xml:"title"`
+	Link       string   `xml:"link"`
+	GUID       string   `xml:"guid"`
+	PubDate    string   `xml:"pubDate"`
+	Seeders    string   `xml:"https://nyaa.si/xmlns/nyaa seeders"`
+	Leechers   string   `xml:"https://nyaa.si/xmlns/nyaa leechers"`
+	Downloads  string   `xml:"https://nyaa.si/xmlns/nyaa downloads"`
+	InfoHash   string   `xml:"https://nyaa.si/xmlns/nyaa infoHash"`
+	CategoryID string   `xml:"https://nyaa.si/xmlns/nyaa categoryId"`
+	Category   string   `xml:"https://nyaa.si/xmlns/nyaa category"`
+	Size       string   `xml:"https://nyaa.si/xmlns/nyaa size"`
+}
+
+func (item *Item) String() string {
+	fmt.Println(item.Seeders)
+	str := fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s\n",
+		item.Title,
+		item.Link,
+		item.GUID,
+		item.PubDate,
+		item.Seeders,
+		item.Leechers,
+		item.Downloads,
+		item.InfoHash,
+		item.CategoryID,
+		item.Category,
+		item.Size,
+	)
+	return str
 }
