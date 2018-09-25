@@ -136,6 +136,9 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
+		v.Highlight = true
+		v.SelBgColor = gocui.ColorGreen
+		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintln(v, "Bookmark")
 		fmt.Fprintln(v, "Recent")
 		fmt.Fprintln(v, "History")
@@ -171,16 +174,17 @@ func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-	if err := v.SetCursor(len(line), cy); err != nil {
-		log.Fatalf("Attempted to move cursor to end of line: %d, %d", len(line)-1, cy)
-		return err
-	}
+	v.MoveCursor(len(line), 0, false)
 	return nil
 }
 
 func cursorStartOfLine(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	if err := v.SetCursor(0, cy); err != nil {
+		return err
+	}
+	_, oy := v.Origin()
+	if err := v.SetOrigin(0, oy); err != nil {
 		return err
 	}
 	return nil
@@ -204,21 +208,20 @@ func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
+		bufLines := v.BufferLines()
 		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
 		cy++
-		if err := v.SetCursor(cx, cy); err != nil {
+		// Don't do anything if there's nothing left after current point
+		if cy > len(bufLines)-2 {
+			return nil
+		} else if err := v.SetCursor(cx, cy); err != nil {
 			oy++
 			if err := v.SetOrigin(ox, oy); err != nil {
 				return err
 			}
 		}
 		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
-		text, _ := v.Line(cy)
-		if text == "" {
-			text = "No text found"
-		}
-		//log.Printf("%s\n", text)
 	}
 	return nil
 }
