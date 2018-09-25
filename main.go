@@ -85,13 +85,11 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Editable = true
-		fmt.Fprintln(v, "Search box")
 		if _, err := g.SetCurrentView("search"); err != nil {
 			return err
 		}
 	}
-
-	if v, err := g.SetView("sidebar", 1, 3, 20, maxY-1); err != nil {
+	if v, err := g.SetView("sidebar", 0, 3, 15, maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -100,8 +98,7 @@ func layout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "History")
 		fmt.Fprintln(v, "Settings")
 	}
-
-	if v, err := g.SetView("result", 20, 3, maxX-1, maxY-1); err != nil {
+	if v, err := g.SetView("result", 15, 3, maxX-1, maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -109,6 +106,18 @@ func layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintln(v, "Result\nResult2\nResult3")
+	}
+	if v, err := g.SetView("helpbar", -1, maxY-3, maxX, maxY-1); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Frame = false
+		v.Highlight = true
+		v.BgColor = gocui.ColorGreen
+		v.FgColor = gocui.ColorBlack
+		v.SelBgColor = gocui.ColorGreen
+		v.SelFgColor = gocui.ColorBlack
+		fmt.Fprintf(v, " h help")
 	}
 	return nil
 }

@@ -11,7 +11,26 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-var ResultTable *Table
+type Sort string
+type Order string
+
+const (
+	Comments   = Sort("comments")
+	Size       = Sort("size")
+	Date       = Sort("id")
+	Seeders    = Sort("seeders")
+	Leechers   = Sort("leechers")
+	Downloads  = Sort("downloads")
+	Ascending  = Order("asc")
+	Descending = Order("desc")
+)
+
+var (
+	sort  = Comments
+	order = Descending
+	page  = 0
+	table *Table
+)
 
 func UpdateTable(g *gocui.Gui) error {
 	v, err := g.View("result")
@@ -20,20 +39,25 @@ func UpdateTable(g *gocui.Gui) error {
 	}
 	v.Clear()
 
-	for i := 0; i < len(ResultTable.Items); i++ {
-		fmt.Fprintln(v, ResultTable.Items[i].Title)
+	for i := 0; i < len(table.Items); i++ {
+		fmt.Fprintln(v, table.Items[i].Title)
 	}
 	return nil
 }
 
 func Query(searchTerm string) error {
 	// Nyaa.si http request
-	url := fmt.Sprintf("https://nyaa.si/?q=%s&f=0&c=0_0&page=rss", strings.TrimSpace(searchTerm))
+	url := fmt.Sprintf("https://nyaa.si/?f=0&c=0_0&q=%s&s=%s&o=%s&page=rss",
+		strings.TrimSpace(searchTerm),
+		sort,
+		order,
+	)
 	log.Printf("GET request (url): %s", url)
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("GET request complete.")
 
 	// Read body into bytes
 	bytes, err := ioutil.ReadAll(res.Body)
@@ -50,65 +74,59 @@ func Query(searchTerm string) error {
 	}
 
 	// Convert slice of items to a map
-	items := make(map[int]*Item)
+	var items []*Item
 	for i := 0; i < len(rss.Items); i++ {
-		items[i] = &rss.Items[i]
+		items = append(items, &rss.Items[i])
 	}
 
-	table := Table{
-		Items: items,
-		Sort:  Seeders,
+	table = &Table{
+		Items:      items,
+		SortMethod: Date,
 	}
-
-	ResultTable = &table
 
 	return nil
 }
-
-type Sort string
-
-const (
-	Category  = Sort("Category")
-	Title     = Sort("Title")
-	Size      = Sort("Size")
-	Date      = Sort("Date")
-	Seeders   = Sort("Seeders")
-	Leechers  = Sort("Leechers")
-	Downloads = Sort("Downloads")
-)
 
 type Table struct {
-	Items map[int]*Item
-	Sort  Sort
+	Items      []*Item
+	SortMethod Sort
 }
 
-func (nyaa *Table) SortByCategory() error {
-	// if nyaa.Sort is Category already, then just reverse
-	return nil
+func (nyaa *Table) Sort() {
+	switch nyaa.SortMethod {
+	case Comments:
+		nyaa.SortByComments()
+	case Size:
+		nyaa.SortBySize()
+	case Date:
+		nyaa.SortByDate()
+	case Seeders:
+		nyaa.SortBySeeders()
+	case Leechers:
+		nyaa.SortByLeechers()
+	case Downloads:
+		nyaa.SortByDownloads()
+	default:
+		nyaa.SortByDate()
+	}
 }
 
-func (nyaa *Table) SortByTitle() error {
-	return nil
+func (nyaa *Table) SortByComments() {
 }
 
-func (nyaa *Table) SortBySize() error {
-	return nil
+func (nyaa *Table) SortBySize() {
 }
 
-func (nyaa *Table) SortByDate() error {
-	return nil
+func (nyaa *Table) SortByDate() {
 }
 
-func (nyaa *Table) SortBySeeders() error {
-	return nil
+func (nyaa *Table) SortBySeeders() {
 }
 
-func (nyaa *Table) SortByLeechers() error {
-	return nil
+func (nyaa *Table) SortByLeechers() {
 }
 
-func (nyaa *Table) SortByDownloads() error {
-	return nil
+func (nyaa *Table) SortByDownloads() {
 }
 
 type Rss struct {
