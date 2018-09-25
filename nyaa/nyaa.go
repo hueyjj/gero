@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	sort  = Comments
+	sort  = Date
 	order = Descending
 	page  = 0
 	table *Table

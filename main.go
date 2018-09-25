@@ -60,31 +60,61 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyArrowLeft, gocui.ModNone, cursorLeft); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyArrowRight, gocui.ModNone, cursorRight); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", 'h', gocui.ModNone, cursorLeft); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyHome, gocui.ModNone, cursorStartOfLine); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", 'j', gocui.ModNone, cursorDown); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyEnd, gocui.ModNone, cursorEndOfLine); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", 'k', gocui.ModNone, cursorUp); err != nil {
+	if err := g.SetKeybinding("result", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", 'l', gocui.ModNone, cursorRight); err != nil {
+	if err := g.SetKeybinding("result", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("search", gocui.KeyEnter, gocui.ModNone, submitQuery); err != nil {
+	if err := g.SetKeybinding("result", 'h', gocui.ModNone, cursorLeft); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", 'j', gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", 'k', gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", 'l', gocui.ModNone, cursorRight); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("result", 'c', gocui.ModNone, sortByComments); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("result", gocui.KeyEnter, gocui.ModNone, openTorrent); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", 'h', gocui.ModNone, cursorLeft); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", 'j', gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", 'k', gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("sidebar", 'l', gocui.ModNone, cursorRight); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("search", gocui.KeyEnter, gocui.ModNone, submitQuery); err != nil {
 		return err
 	}
 	return nil
@@ -135,84 +165,97 @@ func layout(g *gocui.Gui) error {
 	return nil
 }
 
+func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	line, err := v.Line(cy)
+	if err != nil {
+		return err
+	}
+	if err := v.SetCursor(len(line), cy); err != nil {
+		log.Fatalf("Attempted to move cursor to end of line: %d, %d", len(line)-1, cy)
+		return err
+	}
+	return nil
+}
+
+func cursorStartOfLine(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	if err := v.SetCursor(0, cy); err != nil {
+		return err
+	}
+	return nil
+}
+
 func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		if v.Name() == "sidebar" || v.Name() == "result" {
-			ox, oy := v.Origin()
-			cx, cy := v.Cursor()
-			cx--
-			if err := v.SetCursor(cx, cy); err != nil && ox > 0 {
-				ox--
-				if err := v.SetOrigin(ox, oy); err != nil {
-					return err
-				}
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		cx--
+		if err := v.SetCursor(cx, cy); err != nil && ox > 0 {
+			ox--
+			if err := v.SetOrigin(ox, oy); err != nil {
+				return err
 			}
-			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 		}
+		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 	}
 	return nil
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		if v.Name() == "sidebar" || v.Name() == "result" {
-			ox, oy := v.Origin()
-			cx, cy := v.Cursor()
-			cy++
-			if err := v.SetCursor(cx, cy); err != nil {
-				oy++
-				if err := v.SetOrigin(ox, oy); err != nil {
-					return err
-				}
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		cy++
+		if err := v.SetCursor(cx, cy); err != nil {
+			oy++
+			if err := v.SetOrigin(ox, oy); err != nil {
+				return err
 			}
-			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
-			text, _ := v.Line(cy)
-			if text == "" {
-				text = "No text found"
-			}
-			//log.Printf("%s\n", text)
 		}
+		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
+		text, _ := v.Line(cy)
+		if text == "" {
+			text = "No text found"
+		}
+		//log.Printf("%s\n", text)
 	}
 	return nil
 }
 
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		if v.Name() == "sidebar" || v.Name() == "result" {
-			ox, oy := v.Origin()
-			cx, cy := v.Cursor()
-			cy--
-			if err := v.SetCursor(cx, cy); err != nil && oy > 0 {
-				oy--
-				if err := v.SetOrigin(ox, oy); err != nil {
-					return err
-				}
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		cy--
+		if err := v.SetCursor(cx, cy); err != nil && oy > 0 {
+			oy--
+			if err := v.SetOrigin(ox, oy); err != nil {
+				return err
 			}
-			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
-			text, _ := v.Line(cy)
-			if text == "" {
-				text = "No text found"
-			}
-			//log.Printf("%s\n", text)
 		}
+		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
+		text, _ := v.Line(cy)
+		if text == "" {
+			text = "No text found"
+		}
+		//log.Printf("%s\n", text)
 	}
 	return nil
 }
 
 func cursorRight(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		if v.Name() == "sidebar" || v.Name() == "result" {
-			ox, oy := v.Origin()
-			cx, cy := v.Cursor()
-			cx++
-			if err := v.SetCursor(cx, cy); err != nil {
-				ox++
-				if err := v.SetOrigin(ox, oy); err != nil {
-					return err
-				}
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		cx++
+		if err := v.SetCursor(cx, cy); err != nil {
+			ox++
+			if err := v.SetOrigin(ox, oy); err != nil {
+				return err
 			}
-			log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 		}
+		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 	}
 	return nil
 }
