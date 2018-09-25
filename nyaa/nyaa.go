@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/jroimartin/gocui"
@@ -40,7 +41,7 @@ func UpdateTable(g *gocui.Gui) error {
 	v.Clear()
 
 	for i := 0; i < len(table.Items); i++ {
-		fmt.Fprintln(v, table.Items[i].Title)
+		fmt.Fprintf(v, "%3d %s\n", i, table.Items[i].Title)
 	}
 	return nil
 }
@@ -59,8 +60,8 @@ func Query(searchTerm string) error {
 	}
 	log.Println("GET request complete.")
 
-	// Read body into bytes
-	bytes, err := ioutil.ReadAll(res.Body)
+	// Read body into content (bytes)
+	content, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -68,7 +69,7 @@ func Query(searchTerm string) error {
 
 	// Unmarshal contents to a slice of items
 	var rss Rss
-	err = xml.Unmarshal(bytes, &rss)
+	err = xml.Unmarshal(content, &rss)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,12 +88,40 @@ func Query(searchTerm string) error {
 	return nil
 }
 
+func DownloadTorrent(index int) error {
+	log.Printf("Downloading torrent (index=%d): %s", index, table.Items[index].Title)
+	if 0 <= index && index < len(table.Items) {
+		res, err := http.Get(table.Items[index].Link)
+		if err != nil {
+			log.Fatal(err)
+		}
+		content, err := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dir, err := ioutil.TempDir("", "gero-torrents")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		splitLink := strings.SplitAfter(table.Items[index].Link, "/")
+		name := splitLink[len(splitLink)-1]
+		tmpTorrent := filepath.Join(dir, name)
+		if err := ioutil.WriteFile(tmpTorrent, content, 0666); err != nil {
+			log.Fatal(err)
+		}
+	}
+	return nil
+}
+
 type Table struct {
 	Items      []*Item
 	SortMethod Sort
 }
 
-func (nyaa *Table) Sort() {
+/**func (nyaa *Table) Sort() {
 	switch nyaa.SortMethod {
 	case Comments:
 		nyaa.SortByComments()
@@ -110,24 +139,7 @@ func (nyaa *Table) Sort() {
 		nyaa.SortByDate()
 	}
 }
-
-func (nyaa *Table) SortByComments() {
-}
-
-func (nyaa *Table) SortBySize() {
-}
-
-func (nyaa *Table) SortByDate() {
-}
-
-func (nyaa *Table) SortBySeeders() {
-}
-
-func (nyaa *Table) SortByLeechers() {
-}
-
-func (nyaa *Table) SortByDownloads() {
-}
+*/
 
 type Rss struct {
 	XMLName xml.Name `xml:"rss"`

@@ -263,6 +263,18 @@ func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func openTorrent(g *gocui.Gui, v *gocui.View) error {
+	_, oy := v.Origin()
+	_, cy := v.Cursor()
+	nyaa.DownloadTorrent(oy + cy)
+	return nil
+}
+
+func sortByComments(g *gocui.Gui, v *gocui.View) error {
+	log.Println("Sort by comments")
+	return nil
+}
+
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
