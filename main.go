@@ -132,7 +132,7 @@ func layout(g *gocui.Gui) error {
 		}
 		fmt.Fprintf(v, "naruto")
 	}
-	if v, err := g.SetView("sidebar", 0, 3, 15, maxY-3); err != nil {
+	if v, err := g.SetView("sidebar", 0, 3, 10, maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -141,7 +141,7 @@ func layout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "History")
 		fmt.Fprintln(v, "Settings")
 	}
-	if v, err := g.SetView("result", 15, 3, maxX-1, maxY-3); err != nil {
+	if v, err := g.SetView("result", 10, 3, maxX-1, maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
