@@ -4,3 +4,4 @@
 * Keys to set previous view
 * Performance test/improvement: queries, sorting redraws
 * After user submits a query, change focus to result (view)
+* Change help bar based on which view we're in
