@@ -266,7 +266,7 @@ func submitQuery(g *gocui.Gui, v *gocui.View) error {
 func openTorrent(g *gocui.Gui, v *gocui.View) error {
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	nyaa.DownloadTorrent(oy + cy)
+	nyaa.OpenTorrent(oy + cy)
 	return nil
 }
 

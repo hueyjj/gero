@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -74,7 +75,6 @@ func Query(searchTerm string) error {
 		log.Fatal(err)
 	}
 
-	// Convert slice of items to a map
 	var items []*Item
 	for i := 0; i < len(rss.Items); i++ {
 		items = append(items, &rss.Items[i])
@@ -88,9 +88,19 @@ func Query(searchTerm string) error {
 	return nil
 }
 
-func DownloadTorrent(index int) error {
-	log.Printf("Downloading torrent (index=%d): %s", index, table.Items[index].Title)
+func OpenTorrent(index int) error {
+	torrent, err := downloadTorrent(index)
+	if err != nil {
+		return err
+	}
+	log.Printf("Firing xdg-open to open %s\n", torrent)
+	exec.Command("xdg-open", torrent).Start()
+	return nil
+}
+
+func downloadTorrent(index int) (string, error) {
 	if 0 <= index && index < len(table.Items) {
+		log.Printf("Downloading torrent (index=%d): %s", index, table.Items[index].Title)
 		res, err := http.Get(table.Items[index].Link)
 		if err != nil {
 			log.Fatal(err)
@@ -108,12 +118,14 @@ func DownloadTorrent(index int) error {
 
 		splitLink := strings.SplitAfter(table.Items[index].Link, "/")
 		name := splitLink[len(splitLink)-1]
-		tmpTorrent := filepath.Join(dir, name)
-		if err := ioutil.WriteFile(tmpTorrent, content, 0666); err != nil {
+		torrent := filepath.Join(dir, name)
+		if err := ioutil.WriteFile(torrent, content, 0666); err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Download complete for torrent (index=%d): %s", index, table.Items[index].Title)
+		return torrent, nil
 	}
-	return nil
+	return "", fmt.Errorf("Index %d out of bounds [0-%d]", index, len(table.Items))
 }
 
 type Table struct {
