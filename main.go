@@ -66,10 +66,16 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyArrowRight, gocui.ModNone, cursorRight); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyEnd, gocui.ModNone, cursorEndOfLine); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("", gocui.KeyHome, gocui.ModNone, cursorStartOfLine); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyEnd, gocui.ModNone, cursorEndOfLine); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyPgup, gocui.ModNone, cursorPageUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, cursorPageDown); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("result", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
@@ -185,6 +191,26 @@ func cursorStartOfLine(g *gocui.Gui, v *gocui.View) error {
 	}
 	_, oy := v.Origin()
 	if err := v.SetOrigin(0, oy); err != nil {
+		return err
+	}
+	return nil
+}
+
+func cursorPageUp(g *gocui.Gui, v *gocui.View) error {
+	ox, oy := v.Origin()
+	_, maxY := v.Size()
+	if oy > 0 {
+		if err := v.SetOrigin(ox, oy-maxY/2); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func cursorPageDown(g *gocui.Gui, v *gocui.View) error {
+	ox, oy := v.Origin()
+	_, maxY := v.Size()
+	if err := v.SetOrigin(ox, oy+maxY/2); err != nil {
 		return err
 	}
 	return nil
