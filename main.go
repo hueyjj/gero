@@ -240,7 +240,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		cx, cy := v.Cursor()
 		cy++
 		// Don't do anything if there's nothing left after current point
-		if cy > len(bufLines)-2 {
+		if cy+oy > len(bufLines)-2 {
 			return nil
 		} else if err := v.SetCursor(cx, cy); err != nil {
 			oy++
