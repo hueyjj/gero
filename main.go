@@ -344,7 +344,7 @@ func openTorrent(g *gocui.Gui, v *gocui.View) error {
 }
 
 func sortByComments(g *gocui.Gui, v *gocui.View) error {
-	log.Println("Sort by comments")
+	nyaa.Sort(g, nyaa.Comments)
 	return nil
 }
 

@@ -13,25 +13,26 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-type Sort string
+type SortMethod string
 type Order string
 
 const (
-	Comments   = Sort("comments")
-	Size       = Sort("size")
-	Date       = Sort("id")
-	Seeders    = Sort("seeders")
-	Leechers   = Sort("leechers")
-	Downloads  = Sort("downloads")
+	Comments   = SortMethod("comments")
+	Size       = SortMethod("size")
+	Date       = SortMethod("id")
+	Seeders    = SortMethod("seeders")
+	Leechers   = SortMethod("leechers")
+	Downloads  = SortMethod("downloads")
 	Ascending  = Order("asc")
 	Descending = Order("desc")
 )
 
 var (
-	sort  = Date
-	order = Descending
-	page  = 0
-	table *Table
+	table          *Table
+	sort           = Date
+	order          = Descending
+	page           = 0
+	lastSearchTerm = ""
 )
 
 func UpdateTable(g *gocui.Gui) error {
@@ -100,9 +101,9 @@ func Query(searchTerm string) error {
 	}
 
 	table = &Table{
-		Items:      items,
-		SortMethod: Date,
+		Items: items,
 	}
+	lastSearchTerm = searchTerm
 
 	return nil
 }
@@ -115,6 +116,12 @@ func OpenTorrent(index int) error {
 	log.Printf("Firing xdg-open to open %s\n", torrent)
 	exec.Command("xdg-open", torrent).Start()
 	return nil
+}
+
+func Sort(g *gocui.Gui, sortMethod SortMethod) {
+	sort = sortMethod
+	Query(lastSearchTerm)
+	UpdateTable(g)
 }
 
 func downloadTorrent(index int) (string, error) {
@@ -189,34 +196,13 @@ func formatDate(pubDate string) string {
 			hour = time[0]
 			min = time[1]
 		}
-		return fmt.Sprintf("%s-%s-%s %s-%s", s[3], s[2], s[1], hour, min)
+		return fmt.Sprintf("%s-%s-%s %s:%s", s[3], s[2], s[1], hour, min)
 	}
 }
 
 type Table struct {
-	Items      []*Item
-	SortMethod Sort
+	Items []*Item
 }
-
-/**func (nyaa *Table) Sort() {
-	switch nyaa.SortMethod {
-	case Comments:
-		nyaa.SortByComments()
-	case Size:
-		nyaa.SortBySize()
-	case Date:
-		nyaa.SortByDate()
-	case Seeders:
-		nyaa.SortBySeeders()
-	case Leechers:
-		nyaa.SortByLeechers()
-	case Downloads:
-		nyaa.SortByDownloads()
-	default:
-		nyaa.SortByDate()
-	}
-}
-*/
 
 type Rss struct {
 	XMLName xml.Name `xml:"rss"`
