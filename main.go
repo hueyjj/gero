@@ -33,7 +33,7 @@ func main() {
 	log.SetOutput(f)
 
 	log.Println("Program started")
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.Output256)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -155,7 +155,7 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorGreen
+		v.SelBgColor = gocui.ColorCyan
 		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintln(v, "Result\nResult2\nResult3")
 	}

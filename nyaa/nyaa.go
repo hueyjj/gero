@@ -41,8 +41,27 @@ func UpdateTable(g *gocui.Gui) error {
 	}
 	v.Clear()
 
-	for i := 0; i < len(table.Items); i++ {
-		fmt.Fprintf(v, "%3d %s\n", i, table.Items[i].Title)
+	for i, item := range table.Items {
+		str := fmt.Sprintf("\x1b[38;5;7m%3d\x1b[0m ", i)
+
+		spaces := maxLength("seeders")
+		str += fmt.Sprintf("\x1b[38;5;34m%*s\x1b[0m/", spaces, item.Seeders)
+
+		spaces = maxLength("leechers")
+		str += fmt.Sprintf("\x1b[38;5;196m%-*s\x1b[0m ", spaces, item.Leechers)
+
+		spaces = maxLength("downloads")
+		str += fmt.Sprintf("\x1b[38;5;6m%*s\x1b[0m ", spaces, item.Downloads)
+
+		pubDate := formatDate(item.PubDate)
+		spaces = maxLength("pubdate")
+		str += fmt.Sprintf("\x1b[48;5;66m\x1b[8m%*s\x1b[0m ", spaces, pubDate)
+
+		spaces = maxLength("size")
+		str += fmt.Sprintf("\x1b[38;5;6m%*s\x1b[0m ", spaces, item.Size)
+
+		str += fmt.Sprintf("\x1b[38;5;7m%s\n\x1b[0m", item.Title)
+		fmt.Fprintf(v, str)
 	}
 	return nil
 }
@@ -126,6 +145,52 @@ func downloadTorrent(index int) (string, error) {
 		return torrent, nil
 	}
 	return "", fmt.Errorf("Index %d out of bounds [0-%d]", index, len(table.Items))
+}
+
+func maxLength(str string) int {
+	max := 0
+	for _, item := range table.Items {
+		if str == "seeders" {
+			if len(item.Seeders) > max {
+				max = len(item.Seeders)
+			}
+		} else if str == "leechers" {
+			if len(item.Leechers) > max {
+				max = len(item.Leechers)
+			}
+		} else if str == "downloads" {
+			if len(item.Downloads) > max {
+				max = len(item.Downloads)
+			}
+		} else if str == "pubdate" {
+			if len(item.PubDate) > max {
+				max = len(formatDate(item.PubDate))
+			}
+		} else if str == "size" {
+			if len(item.Size) > max {
+				max = len(item.Size)
+			}
+		}
+	}
+	return max
+}
+
+func formatDate(pubDate string) string {
+	s := strings.Split(pubDate, " ")
+	if len(s) != 6 {
+		return ""
+	} else {
+		time := strings.Split(s[4], ":")
+		var hour, min string
+		if len(time) != 3 {
+			hour = "0"
+			min = "0"
+		} else {
+			hour = time[0]
+			min = time[1]
+		}
+		return fmt.Sprintf("%s-%s-%s %s-%s", s[3], s[2], s[1], hour, min)
+	}
 }
 
 type Table struct {
