@@ -145,6 +145,7 @@ func layout(g *gocui.Gui) error {
 		v.Highlight = true
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
+		fmt.Fprintln(v, "Search")
 		fmt.Fprintln(v, "Bookmark")
 		fmt.Fprintln(v, "Recent")
 		fmt.Fprintln(v, "History")
