@@ -60,6 +60,15 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", '1', gocui.ModAlt, focusSearch); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", '2', gocui.ModAlt, focusResult); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", '3', gocui.ModAlt, focusSidebar); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("", gocui.KeyArrowLeft, gocui.ModNone, cursorLeft); err != nil {
 		return err
 	}
@@ -96,7 +105,28 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("result", 'l', gocui.ModNone, cursorRight); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("result", 'c', gocui.ModNone, sortByComments); err != nil {
+	if err := g.SetKeybinding("result", gocui.KeyCtrlU, gocui.ModNone, cursorPageUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyCtrlD, gocui.ModNone, cursorPageDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF1, gocui.ModNone, sortByComments); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF2, gocui.ModNone, sortByDate); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF3, gocui.ModNone, sortByDownloads); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF4, gocui.ModNone, sortByLeechers); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF5, gocui.ModNone, sortBySeeders); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", gocui.KeyF6, gocui.ModNone, sortBySize); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("result", gocui.KeyEnter, gocui.ModNone, openTorrent); err != nil {
@@ -177,10 +207,12 @@ func layout(g *gocui.Gui) error {
 
 func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
+	//ox, _ := v.Origin()
 	line, err := v.Line(cy)
 	if err != nil {
 		return err
 	}
+	cursorStartOfLine(g, v)
 	v.MoveCursor(len(line), 0, false)
 	return nil
 }
@@ -198,9 +230,12 @@ func cursorStartOfLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func cursorPageUp(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
 	ox, oy := v.Origin()
 	_, maxY := v.Size()
-	if oy > 0 {
+	if cy+oy-maxY/2 < 0 {
+		return nil
+	} else if oy > 0 {
 		if err := v.SetOrigin(ox, oy-maxY/2); err != nil {
 			return err
 		}
@@ -209,9 +244,13 @@ func cursorPageUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func cursorPageDown(g *gocui.Gui, v *gocui.View) error {
+	bufLines := v.BufferLines()
+	_, cy := v.Cursor()
 	ox, oy := v.Origin()
 	_, maxY := v.Size()
-	if err := v.SetOrigin(ox, oy+maxY/2); err != nil {
+	if cy+oy+maxY/2 > len(bufLines)-2 {
+		return nil
+	} else if err := v.SetOrigin(ox, oy+maxY/2); err != nil {
 		return err
 	}
 	return nil
@@ -228,7 +267,6 @@ func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 	}
 	return nil
 }
@@ -238,17 +276,33 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		bufLines := v.BufferLines()
 		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
+
+		// Checking if we were at the end of line
+		line, err := v.Line(cy)
+		if err != nil {
+			return err
+		}
+		isEndOfLine := false
+		if cx+ox >= len(line) {
+			isEndOfLine = true
+		}
+
 		cy++
 		// Don't do anything if there's nothing left after current point
 		if cy+oy > len(bufLines)-2 {
 			return nil
 		} else if err := v.SetCursor(cx, cy); err != nil {
 			oy++
+			// Move cursor down
 			if err := v.SetOrigin(ox, oy); err != nil {
 				return err
 			}
 		}
-		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
+
+		// Move cursor to end of line
+		if isEndOfLine {
+			cursorEndOfLine(g, v)
+		}
 	}
 	return nil
 }
@@ -257,6 +311,17 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
+
+		// Checking if we were at the end of line
+		line, err := v.Line(cy)
+		if err != nil {
+			return err
+		}
+		isEndOfLine := false
+		if cx+ox >= len(line) {
+			isEndOfLine = true
+		}
+
 		cy--
 		if err := v.SetCursor(cx, cy); err != nil && oy > 0 {
 			oy--
@@ -264,12 +329,11 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
-		text, _ := v.Line(cy)
-		if text == "" {
-			text = "No text found"
+
+		// Move cursor to end of line
+		if isEndOfLine {
+			cursorEndOfLine(g, v)
 		}
-		//log.Printf("%s\n", text)
 	}
 	return nil
 }
@@ -285,7 +349,6 @@ func cursorRight(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		log.Printf("Cursor: cx=%d, cy=%d, ox=%d, oy=%d", cx, cy, ox, oy)
 	}
 	return nil
 }
@@ -299,14 +362,54 @@ func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
 
 func nextView(g *gocui.Gui, v *gocui.View) error {
 	nextIndex := (active + 1) % len(viewArr)
-
 	name := viewArr[nextIndex]
-	log.Printf("Current active view: %s", name)
-
 	if _, err := setCurrentViewOnTop(g, name); err != nil {
 		return err
 	}
 
+	log.Printf("Current active view: %s", name)
+	active = nextIndex
+	return nil
+}
+
+func focusSearch(g *gocui.Gui, v *gocui.View) error {
+	var nextIndex int
+	for i, name := range viewArr {
+		if name == "search" {
+			nextIndex = i
+		}
+	}
+	if _, err := setCurrentViewOnTop(g, "search"); err != nil {
+		return err
+	}
+	active = nextIndex
+	return nil
+}
+
+func focusResult(g *gocui.Gui, v *gocui.View) error {
+	var nextIndex int
+	for i, name := range viewArr {
+		if name == "result" {
+			nextIndex = i
+		}
+	}
+	if _, err := setCurrentViewOnTop(g, "result"); err != nil {
+		return err
+	}
+	active = nextIndex
+	return nil
+}
+
+func focusSidebar(g *gocui.Gui, v *gocui.View) error {
+	var nextIndex int
+	for i, name := range viewArr {
+		if name == "sidebar" {
+			nextIndex = i
+		}
+	}
+	if _, err := setCurrentViewOnTop(g, "sidebar"); err != nil {
+		return err
+	}
 	active = nextIndex
 	return nil
 }
@@ -314,16 +417,18 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 //func previousView(g *gocui.Gui, v *gocui.View) error {
 //	previousIndex := (active - 1)
 //	name := viewArr[previousIndex]
+//
+//	// Reset
 //	if previousIndex < 0 {
 //		previousIndex = len(viewArr) - 1
 //	}
+//
 //	previousIndex %= len(viewArr)
-//
-//	log.Printf("Current active view: %s", name)
-//
 //	if _, err := setCurrentViewOnTop(g, name); err != nil {
 //		return err
 //	}
+//
+//	log.Printf("Current active view: %s", name)
 //	active = previousIndex
 //	return nil
 //}
@@ -333,6 +438,7 @@ func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	log.Printf("Search term: %s", userInput)
 	nyaa.Query(userInput)
 	g.Update(nyaa.UpdateTable)
+	focusResult(g, v)
 	return nil
 }
 
@@ -345,6 +451,31 @@ func openTorrent(g *gocui.Gui, v *gocui.View) error {
 
 func sortByComments(g *gocui.Gui, v *gocui.View) error {
 	nyaa.Sort(g, nyaa.Comments)
+	return nil
+}
+
+func sortBySize(g *gocui.Gui, v *gocui.View) error {
+	nyaa.Sort(g, nyaa.Size)
+	return nil
+}
+
+func sortByDate(g *gocui.Gui, v *gocui.View) error {
+	nyaa.Sort(g, nyaa.Date)
+	return nil
+}
+
+func sortBySeeders(g *gocui.Gui, v *gocui.View) error {
+	nyaa.Sort(g, nyaa.Seeders)
+	return nil
+}
+
+func sortByLeechers(g *gocui.Gui, v *gocui.View) error {
+	nyaa.Sort(g, nyaa.Leechers)
+	return nil
+}
+
+func sortByDownloads(g *gocui.Gui, v *gocui.View) error {
+	nyaa.Sort(g, nyaa.Downloads)
 	return nil
 }
 
