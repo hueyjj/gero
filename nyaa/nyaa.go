@@ -46,6 +46,11 @@ func UpdateTable(g *gocui.Gui) error {
 	for i, item := range table.Items {
 		str := fmt.Sprintf("\x1b[38;5;7m%3d\x1b[0m ", i)
 
+		// Check if marked
+		if TorrentIsMarked(i) {
+			str = fmt.Sprintf("\x1b[48;5;226m\x1b[30m%3d\x1b[0m ", i)
+		}
+
 		spaces := maxLength("seeders")
 		str += fmt.Sprintf("\x1b[38;5;34m%*s\x1b[0m/", spaces, item.Seeders)
 
@@ -63,6 +68,7 @@ func UpdateTable(g *gocui.Gui) error {
 		str += fmt.Sprintf("\x1b[38;5;6m%*s\x1b[0m ", spaces, item.Size)
 
 		str += fmt.Sprintf("\x1b[38;5;7m%s\n\x1b[0m", item.Title)
+
 		fmt.Fprintf(v, str)
 	}
 	return nil
@@ -117,6 +123,44 @@ func OpenTorrent(index int) error {
 	log.Printf("Firing xdg-open to open %s\n", torrent)
 	exec.Command("xdg-open", torrent).Start()
 	return nil
+}
+func OpenMarkedTorrents() error {
+	for _, index := range markedItems {
+		OpenTorrent(index)
+	}
+	return nil
+}
+
+func TorrentsMarked() bool {
+	if len(markedItems) > 0 {
+		return true
+	}
+	return false
+}
+
+func MarkTorrent(index int) error {
+	markedItems = append(markedItems, index)
+	return nil
+}
+
+func UnmarkTorrent(index int) error {
+	i := 0
+	for n, item := range markedItems {
+		if index == item {
+			i = n
+		}
+	}
+	markedItems = append(markedItems[:i], markedItems[i+1:]...)
+	return nil
+}
+
+func TorrentIsMarked(index int) bool {
+	for _, i := range markedItems {
+		if index == i {
+			return true
+		}
+	}
+	return false
 }
 
 func Sort(g *gocui.Gui, sortMethod SortMethod) {

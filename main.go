@@ -138,6 +138,9 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("result", gocui.KeyEnter, gocui.ModNone, openTorrent); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("result", gocui.KeySpace, gocui.ModNone, markTorrent); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("sidebar", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
@@ -449,14 +452,32 @@ func submitQuery(g *gocui.Gui, v *gocui.View) error {
 	log.Printf("Search term: %s", userInput)
 	nyaa.Query(userInput)
 	g.Update(nyaa.UpdateTable)
-	focusResult(g, v)
 	return nil
 }
 
 func openTorrent(g *gocui.Gui, v *gocui.View) error {
+	if nyaa.TorrentsMarked() {
+		// Open all marked torrents
+		nyaa.OpenMarkedTorrents()
+	} else {
+		// Open torreunt under cursor
+		_, oy := v.Origin()
+		_, cy := v.Cursor()
+		nyaa.OpenTorrent(oy + cy)
+	}
+	return nil
+}
+
+func markTorrent(g *gocui.Gui, v *gocui.View) error {
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	nyaa.OpenTorrent(oy + cy)
+	index := oy + cy
+	if nyaa.TorrentIsMarked(index) {
+		nyaa.UnmarkTorrent(index)
+	} else {
+		nyaa.MarkTorrent(index)
+	}
+	g.Update(nyaa.UpdateTable)
 	return nil
 }
 
