@@ -28,10 +28,10 @@ const (
 )
 
 var (
-	table          *Table
-	sort           = Date
-	order          = Descending
-	page           = 0
+	table *Table
+	sort  = Date
+	order = Descending
+	//page           = 0
 	lastSearchTerm = ""
 	markedItems    []int
 )
@@ -114,6 +114,20 @@ func Query(searchTerm string) error {
 
 	return nil
 }
+
+//func NextPage(g *gocui.Gui) {
+//	page++
+//	Query(lastSearchTerm)
+//	UpdateTable(g)
+//}
+//
+//func PrevPage(g *gocui.Gui) {
+//	if page--; page < 0 {
+//		return
+//	}
+//	Query(lastSearchTerm)
+//	UpdateTable(g)
+//}
 
 func OpenTorrent(index int) error {
 	torrent, err := downloadTorrent(index)

@@ -87,6 +87,12 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, cursorPageDown); err != nil {
 		return err
 	}
+	//if err := g.SetKeybinding("result", 'n', gocui.ModNone, nextPage); err != nil {
+	//	return err
+	//}
+	//if err := g.SetKeybinding("result", 'N', gocui.ModNone, prevPage); err != nil {
+	//	return err
+	//}
 	if err := g.SetKeybinding("result", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
@@ -213,6 +219,18 @@ func layout(g *gocui.Gui) error {
 	}
 	return nil
 }
+
+//func nextPage(g *gocui.Gui, v *gocui.View) error {
+//	nyaa.NextPage(g)
+//	g.Update(nyaa.UpdateTable)
+//	return nil
+//}
+//
+//func prevPage(g *gocui.Gui, v *gocui.View) error {
+//	nyaa.PrevPage(g)
+//	g.Update(nyaa.UpdateTable)
+//	return nil
+//}
 
 func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()

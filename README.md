@@ -7,3 +7,5 @@ It is possible that requesting for the HTML document and parsing it could be fas
 requesting for the RSS feed and parsing that. The slight delay does affect the main usage of the
 program, but will consider alternatives to speed things up.
 
+
+# No pagination supported. We are retrieving the information through a rss endpoint, which doesn't support pagination for some reason. The only other way at the moment would be to do GET request for the html and parse that; rewrite seems inevitable if it is actually necessary.
