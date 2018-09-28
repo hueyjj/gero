@@ -57,6 +57,9 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", gocui.KeyCtrlH, gocui.ModNone, toggleHelpPage); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
@@ -217,6 +220,32 @@ func layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintf(v, " h (help)")
 	}
+	return nil
+}
+
+func toggleHelpPage(g *gocui.Gui, v *gocui.View) error {
+	maxX, maxY := g.Size()
+	if g.CurrentView().Name() == "help" {
+		delHelpPage(g, v)
+	} else {
+		if v, err := g.SetView("help", maxX/2-30, maxY/2, maxX/2+30, maxY/2+2); err != nil {
+			if err != gocui.ErrUnknownView {
+				return err
+			}
+			fmt.Fprintln(v, "help page")
+			if _, err := g.SetCurrentView("help"); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func delHelpPage(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView("help"); err != nil {
+		return err
+	}
+	focusSearch(g, v)
 	return nil
 }
 
