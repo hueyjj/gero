@@ -418,6 +418,19 @@ func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
 	if _, err := g.SetCurrentView(name); err != nil {
 		return nil, err
 	}
+
+	currentView := g.CurrentView()
+
+	if currentView.Name() == "search" {
+		// Move cursor to end of line
+		line, err := currentView.Line(0)
+		if err != nil {
+			return nil, err
+		}
+		if err := currentView.SetCursor(len(line), 0); err != nil {
+			return nil, err
+		}
+	}
 	return g.SetViewOnTop(name)
 }
 
@@ -443,6 +456,7 @@ func focusSearch(g *gocui.Gui, v *gocui.View) error {
 	if _, err := setCurrentViewOnTop(g, "search"); err != nil {
 		return err
 	}
+
 	active = nextIndex
 	return nil
 }
