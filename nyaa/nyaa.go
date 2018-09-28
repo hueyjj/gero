@@ -33,6 +33,7 @@ var (
 	order          = Descending
 	page           = 0
 	lastSearchTerm = ""
+	markedItems    []int
 )
 
 func UpdateTable(g *gocui.Gui) error {
@@ -88,7 +89,7 @@ func Query(searchTerm string) error {
 		log.Fatal(err)
 	}
 
-	// Unmarshal contents to a slice of items
+	// Unmarshal contents
 	var rss Rss
 	err = xml.Unmarshal(content, &rss)
 	if err != nil {

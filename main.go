@@ -105,6 +105,12 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("result", 'l', gocui.ModNone, cursorRight); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("result", '0', gocui.ModNone, cursorStartOfLine); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("result", '$', gocui.ModNone, cursorEndOfLine); err != nil {
+		return err
+	}
 	if err := g.SetKeybinding("result", gocui.KeyCtrlU, gocui.ModNone, cursorPageUp); err != nil {
 		return err
 	}
@@ -236,8 +242,13 @@ func cursorPageUp(g *gocui.Gui, v *gocui.View) error {
 	if cy+oy-maxY/2 < 0 {
 		return nil
 	} else if oy > 0 {
-		if err := v.SetOrigin(ox, oy-maxY/2); err != nil {
-			return err
+		nextOy := oy - maxY/2
+		if nextOy < 0 {
+			nextOy = 0
+		}
+		if err := v.SetOrigin(ox, nextOy); err != nil {
+			geroError := fmt.Errorf("cy=%d ox=%d oy=%d maxY=%d", cy, ox, oy, maxY)
+			return fmt.Errorf("cursorPageUp: %v %v", err, geroError)
 		}
 	}
 	return nil
