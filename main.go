@@ -459,6 +459,8 @@ func openTorrent(g *gocui.Gui, v *gocui.View) error {
 	if nyaa.TorrentsMarked() {
 		// Open all marked torrents
 		nyaa.OpenMarkedTorrents()
+		nyaa.MarkedTorrentsRemoveAll()
+		g.Update(nyaa.UpdateTable)
 	} else {
 		// Open torreunt under cursor
 		_, oy := v.Origin()

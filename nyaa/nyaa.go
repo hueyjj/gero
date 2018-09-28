@@ -124,6 +124,7 @@ func OpenTorrent(index int) error {
 	exec.Command("xdg-open", torrent).Start()
 	return nil
 }
+
 func OpenMarkedTorrents() error {
 	for _, index := range markedItems {
 		OpenTorrent(index)
@@ -152,6 +153,10 @@ func UnmarkTorrent(index int) error {
 	}
 	markedItems = append(markedItems[:i], markedItems[i+1:]...)
 	return nil
+}
+
+func MarkedTorrentsRemoveAll() {
+	markedItems = []int{}
 }
 
 func TorrentIsMarked(index int) bool {
