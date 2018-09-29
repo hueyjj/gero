@@ -4,8 +4,8 @@ open a torrent or batches at a time (by marking) from the command line. Gero is 
 
 gero uses [gocui](https://github.com/jroimartin/gocui) to create its console user interfaces.
 
-![Example](/screenshots/example.png)
-![Help](/screenshots/help.png)
+![Main](/screenshots/main.png)
+![Help pag](/screenshots/helppage.png)
 
 ## Why is gero slightly slower than the website?
 Gero uses nyaa's rss feed instead of parsing the webpage directly. Evidently, the RSS feed could be 50% slower than sending a query through the website (around 500 ms slower).
