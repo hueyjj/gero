@@ -1,16 +1,22 @@
 # gero
+Gero is a terminal based UI application for interfacing with nyaa.si. It allows you to 
+open a torrent or batches at time (by marking) from the command line. Gero is *not* a torrent client. 
+
+gero uses [gocui](https://github.com/jroimartin/gocui) to create its console user interfaces.
+
+![Example](https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/home.PNG)
+![Help](https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/help.PNG)
 
 
 ## Why is gero slightly slower than the website?
-Apparently, the RSS feed could be 50% slower than sending a query through the website. 
+Gero uses nyaa's rss feed instead of parsing the webpage directly. Evidently, the RSS feed could be 50% slower than sending a query through the website (around 500 ms slower).
 It is possible that requesting for the HTML document and parsing it could be faster than
 requesting for the RSS feed and parsing that. The slight delay does affect the main usage of the
-program, but will consider alternatives to speed things up.
-
+program, but it is not a priority at the moment.
 
 ## No pagination supported. 
-We are retrieving the information through a rss endpoint, which doesn't support pagination for some reason. The only other way at the moment would be to do GET request for the html and parse that; rewrite seems inevitable if it is actually necessary.
+Gero is retrieving the information through a rss endpoint, which doesn't support pagination for various reasons. The only other way at the moment would be to get the actual webpage and parse it and do our own pagination with the url. A rewrite to using the webpage instead is inevitable if pagination is a priority.
 
 ## Known issues
-- Jumping to end of line sometimes jumps too far -- strongly believe this a gocui issue. 
+- Jumping to the end of line sometimes jumps too far -- high possiblity this a gocui issue. 
 To replicate: open terminal, decrease window size of terminal significantly, jump to end of a line that has a long line (>200 char). 
