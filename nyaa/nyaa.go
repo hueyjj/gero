@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/jroimartin/gocui"
@@ -135,7 +136,11 @@ func OpenTorrent(index int) error {
 		return err
 	}
 	log.Printf("Firing xdg-open to open %s\n", torrent)
-	exec.Command("xdg-open", torrent).Start()
+	if runtime.GOOS == "windows" {
+		exec.Command("start", torrent).Start()
+	} else if runtime.GOOS == "linux" {
+		exec.Command("xdg-open", torrent).Start()
+	}
 	return nil
 }
 

@@ -184,7 +184,6 @@ func layout(g *gocui.Gui) error {
 		if _, err := g.SetCurrentView("search"); err != nil {
 			return err
 		}
-		fmt.Fprintf(v, "naruto")
 	}
 	if v, err := g.SetView("sidebar", 0, 3, 10, maxY-4); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -206,7 +205,6 @@ func layout(g *gocui.Gui) error {
 		v.Highlight = true
 		v.SelBgColor = gocui.ColorCyan
 		v.SelFgColor = gocui.ColorBlack
-		fmt.Fprintln(v, "Result\nResult2\nResult3")
 	}
 	if v, err := g.SetView("helpbar", -1, maxY-4, maxX, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
