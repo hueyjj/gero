@@ -4,8 +4,8 @@ open a torrent or batches at a time (by marking) from the command line. Gero is 
 
 gero uses [gocui](https://github.com/jroimartin/gocui) to create its console user interfaces.
 
-![Example](/screenshots/example.png?raw=true)
-![Help](/screenshots/help.png?raw=true)
+<img src="https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/example.png" width="1003" height="574"> 
+<img src="https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/help.png" width="1004" height="574"> 
 
 
 ## Why is gero slightly slower than the website?
