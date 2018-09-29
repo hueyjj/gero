@@ -140,6 +140,8 @@ func OpenTorrent(index int) error {
 		exec.Command("start", torrent).Start()
 	} else if runtime.GOOS == "linux" {
 		exec.Command("xdg-open", torrent).Start()
+	} else if runtime.GOOS == "darwin" {
+		exec.Command("open", torrent).Start()
 	}
 	return nil
 }
