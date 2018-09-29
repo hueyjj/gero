@@ -262,14 +262,26 @@ func delHelpPage(g *gocui.Gui, v *gocui.View) error {
 //}
 
 func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
-	_, cy := v.Cursor()
-	//ox, _ := v.Origin()
+	cx, cy := v.Cursor()
+	ox, oy := v.Origin()
 	line, err := v.Line(cy)
 	if err != nil {
 		return err
 	}
-	cursorStartOfLine(g, v)
-	v.MoveCursor(len(line), 0, false)
+	length := len(line)
+
+	maxX, maxY := v.Size()
+	// Shift origin
+	n := length / maxX
+	if n > 0 {
+		if err := v.SetOrigin(maxX*n, oy); err != nil {
+			return err
+		}
+	}
+	if err := v.SetCursor(0, cy); err != nil {
+		return err
+	}
+
 	return nil
 }
 
