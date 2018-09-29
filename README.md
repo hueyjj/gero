@@ -1,11 +1,11 @@
 # gero
-Gero is a terminal based UI application for interfacing with nyaa.si. It allows you to 
-open a torrent or batches at time (by marking) from the command line. Gero is *not* a torrent client. 
+Gero is a terminal based UI application for interfacing nyaa.si. It allows you to 
+open a torrent or batches at a time (by marking) from the command line. Gero is **not** a torrent client. 
 
 gero uses [gocui](https://github.com/jroimartin/gocui) to create its console user interfaces.
 
-![Example](https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/example.png)
-![Help](https://raw.githubusercontent.com/hueyjj/gero/master/screenshots/help.png)
+![Example](/screenshots/example.png?raw=true)
+![Help](/screenshots/help.png?raw=true)
 
 
 ## Why is gero slightly slower than the website?
