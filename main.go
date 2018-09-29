@@ -262,15 +262,15 @@ func delHelpPage(g *gocui.Gui, v *gocui.View) error {
 //}
 
 func cursorEndOfLine(g *gocui.Gui, v *gocui.View) error {
-	cx, cy := v.Cursor()
-	ox, oy := v.Origin()
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
 	line, err := v.Line(cy)
 	if err != nil {
 		return err
 	}
 	length := len(line)
 
-	maxX, maxY := v.Size()
+	maxX, _ := v.Size()
 	// Shift origin
 	n := length / maxX
 	if n > 0 {
@@ -332,13 +332,20 @@ func cursorPageDown(g *gocui.Gui, v *gocui.View) error {
 func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
-		cx, cy := v.Cursor()
-		cx--
-		if err := v.SetCursor(cx, cy); err != nil && ox > 0 {
-			ox--
-			if err := v.SetOrigin(ox, oy); err != nil {
-				return err
-			}
+		ox--
+		if err := v.SetOrigin(ox, oy); err != nil && ox > 0 {
+			return err
+		}
+	}
+	return nil
+}
+
+func cursorRight(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		ox++
+		if err := v.SetOrigin(ox, oy); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -406,21 +413,6 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 		// Move cursor to end of line
 		if isEndOfLine {
 			cursorEndOfLine(g, v)
-		}
-	}
-	return nil
-}
-
-func cursorRight(g *gocui.Gui, v *gocui.View) error {
-	if v != nil {
-		ox, oy := v.Origin()
-		cx, cy := v.Cursor()
-		cx++
-		if err := v.SetCursor(cx, cy); err != nil {
-			ox++
-			if err := v.SetOrigin(ox, oy); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
