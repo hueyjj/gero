@@ -63,13 +63,13 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", '1', gocui.ModAlt, focusSearch); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlF, gocui.ModNone, focusSearch); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", '2', gocui.ModAlt, focusResult); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlR, gocui.ModNone, focusResult); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", '3', gocui.ModAlt, focusSidebar); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlS, gocui.ModNone, focusSidebar); err != nil {
 		return err
 	}
 	if err := g.SetKeybinding("", gocui.KeyArrowLeft, gocui.ModNone, cursorLeft); err != nil {
@@ -186,7 +186,7 @@ func layout(g *gocui.Gui) error {
 		}
 		fmt.Fprintf(v, "naruto")
 	}
-	if v, err := g.SetView("sidebar", 0, 3, 10, maxY-3); err != nil {
+	if v, err := g.SetView("sidebar", 0, 3, 10, maxY-4); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -199,7 +199,7 @@ func layout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "History")
 		fmt.Fprintln(v, "Settings")
 	}
-	if v, err := g.SetView("result", 10, 3, maxX-1, maxY-3); err != nil {
+	if v, err := g.SetView("result", 10, 3, maxX-1, maxY-4); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -208,17 +208,18 @@ func layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintln(v, "Result\nResult2\nResult3")
 	}
-	if v, err := g.SetView("helpbar", -1, maxY-3, maxX, maxY-1); err != nil {
+	if v, err := g.SetView("helpbar", -1, maxY-4, maxX, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Frame = false
 		v.Highlight = true
+		v.Wrap = true
 		v.BgColor = gocui.ColorGreen
 		v.FgColor = gocui.ColorBlack
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
-		fmt.Fprintf(v, " h (help)")
+		fmt.Fprintf(v, " c-c (quit) c-h (help) tab (cycle) F1-F6 (sort) c-f (search) c-r (result) c-s (menu) space (mark)")
 	}
 	return nil
 }
@@ -228,11 +229,35 @@ func toggleHelpPage(g *gocui.Gui, v *gocui.View) error {
 	if g.CurrentView().Name() == "help" {
 		delHelpPage(g, v)
 	} else {
-		if v, err := g.SetView("help", maxX/2-30, maxY/2, maxX/2+30, maxY/2+2); err != nil {
+		if v, err := g.SetView("help", 0, 0, maxX, maxY); err != nil {
 			if err != gocui.ErrUnknownView {
 				return err
 			}
-			fmt.Fprintln(v, "help page")
+			v.Wrap = true
+
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "ctrl+c", "quit program")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "ctrl+h", "toggle help page")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "tab", "cycle through views")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "ctrl+f", "focus search")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "ctrl+r", "focus result")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "ctrl+s", "focus menu")
+			fmt.Fprintf(v, "\n")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "hjkl or arrow keys", "move left, down, up, right")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "End or $", "jump to end of line")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Home or 0 (zero)", "jump to start of line")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Page up or ctrl+u", "jump half page up")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Page down or ctrl+d", "jump half page down")
+			fmt.Fprintf(v, "\n")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F1", "sort by comments")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F2", "sort by date")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F3", "sort by downloads")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F4", "sort by leechers")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F5", "sort by seedeers")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "F6", "sort by size")
+			fmt.Fprintf(v, "\n")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Enter (search)", "submits query")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Enter (results)", "download highlighted torrent OR downloads marked torrent (this has precedence)")
+			fmt.Fprintf(v, "\x1b[38;5;226m%20s\x1b[0m %-s\n", "Spacebar", "mark torrent to download (press enter after to download marked torrents)")
 			if _, err := g.SetCurrentView("help"); err != nil {
 				return err
 			}
