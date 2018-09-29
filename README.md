@@ -4,6 +4,12 @@ open a torrent or batches at a time (by marking) from the command line. Gero is 
 
 gero uses [gocui](https://github.com/jroimartin/gocui) to create its console user interfaces.
 
+
+### Install gero
+```sh
+go get -u github.com/hueyjj/gero
+```
+
 ![Main](/screenshots/main.png)
 ![Help pag](/screenshots/helppage.png)
 
